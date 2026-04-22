@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Plataforma Educativa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f4f7f6; height: 100vh; display: flex; align-items: center; }
+        .login-card { width: 100%; max-width: 400px; padding: 15px; margin: auto; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5 text-center">
+                <h2 class="mb-4 fw-bold text-primary">Iniciar Sesión</h2>
+                
+                {% if messages %}
+                    {% for message in messages %}<div class="alert alert-danger small">{{ message }}</div>{% endfor %}
+                {% endif %}
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold">Tipo de Usuario</label>
+                        <select name="tipo_usuario" id="tipo_usuario" class="form-select" onchange="cambiarLista()">
+                            <option value="alumno">Soy Alumno</option>
+                            <option value="admin">Soy Administrador</option>
+                            <option value="instructor">Soy Profesor</option> </select>
+                    </div>
+                    
+                    <div class="mb-4 text-start" id="div_alumnos">
+                        <label class="form-label fw-bold">Selecciona tu Nombre</label>
+                        <select name="usuario_id_alumno" class="form-select">
+                            <option value="">-- Elige tu perfil --</option>
+                            {% for alu in alumnos %}
+                                <option value="{{ alu.id }}">{{ alu.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4 text-start" id="div_admins" style="display: none;">
+                        <label class="form-label fw-bold">Selecciona Administrador</label>
+                        <select name="usuario_id_admin" class="form-select">
+                            <option value="">-- Elige administrador --</option>
+                            {% for adm in admins %}
+                                <option value="{{ adm.id }}">{{ adm.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4 text-start" id="div_profesores" style="display: none;">
+                        <label class="form-label fw-bold">Selecciona Profesor</label>
+                        <select name="usuario_id_profesor" class="form-select">
+                            <option value="">-- Elige profesor --</option>
+                            {% for prof in profesores %}
+                                <option value="{{ prof.id }}">{{ prof.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <input type="hidden" name="usuario_id" id="usuario_id_final">
+                    <input type="hidden" name="nombre_oculto" id="nombre_oculto_final">
+
+                    <button type="submit" class="btn btn-primary w-100 btn-lg" onclick="prepararEnvio(event)">Entrar al Sistema</button>
+                </form>
+                
+                <hr class="my-4">
+                <div class="text-center">
+                    <p class="text-muted mb-2">¿Eres nuevo en la plataforma?</p>
+                    <a href="/registro/" class="btn btn-outline-success w-100 mb-2">Registrarse como Estudiante</a>
+                </div>
+
+                <script>
+                    function cambiarLista() {
+                        var tipo = document.getElementById('tipo_usuario').value;
+                        
+                        // Ocultar todas primero
+                        document.getElementById('div_alumnos').style.display = 'none';
+                        document.getElementById('div_admins').style.display = 'none';
+                        document.getElementById('div_profesores').style.display = 'none';
+                        
+                        // Mostrar la correcta
+                        if (tipo === 'alumno') {
+                            document.getElementById('div_alumnos').style.display = 'block';
+                        } else if (tipo === 'admin') {
+                            document.getElementById('div_admins').style.display = 'block';
+                        } else if (tipo === 'instructor') {
+                            document.getElementById('div_profesores').style.display = 'block';
+                        }
+                    }
+
+                    function prepararEnvio(event) {
+                        var tipo = document.getElementById('tipo_usuario').value;
+                        var listaSeleccionada;
+                        
+                        if (tipo === 'alumno') {
+                            listaSeleccionada = document.querySelector('select[name="usuario_id_alumno"]');
+                        } else if (tipo === 'admin') {
+                            listaSeleccionada = document.querySelector('select[name="usuario_id_admin"]');
+                        } else if (tipo === 'instructor') {
+                            listaSeleccionada = document.querySelector('select[name="usuario_id_profesor"]');
+                        }
+                        
+                        if (listaSeleccionada.value === "") {
+                            event.preventDefault(); 
+                            alert("¡Alto ahí! 🛑 Por favor, selecciona tu nombre de la lista antes de entrar.");
+                            return false;
+                        }
+                        
+                        document.getElementById('usuario_id_final').value = listaSeleccionada.value;
+                        document.getElementById('nombre_oculto_final').value = listaSeleccionada.options[listaSeleccionada.selectedIndex].text;
+                    }
+                </script>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

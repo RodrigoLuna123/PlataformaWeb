@@ -1,0 +1,105 @@
+{% extends "gestion/base.html" %}
+
+{% block title %}Nuevo Estudiante{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0">👨‍🎓 Registro de Estudiante</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre Completo</label>
+                        <input type="text" name="nombre" class="form-control" placeholder="Ej. Juan Pérez" required>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Correo Electrónico</label>
+                            <input type="email" name="email" class="form-control" placeholder="usuario@correo.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control" placeholder="10 dígitos" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Dirección de Contacto</label>
+                        <textarea name="direccion" class="form-control" rows="2" required></textarea>
+                    </div>
+
+                    <div class="p-3 bg-light rounded border border-danger mb-4">
+                        <h6 class="text-danger fw-bold">Sección de Datos Sensibles (Cifrado Activo)</h6>
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label class="form-label small">Tipo de Documento</label>
+                                <select name="tipo_doc" class="form-select">
+                                    <option value="INE">Identificación Oficial (INE)</option>
+                                    <option value="Pasaporte">Pasaporte Vigente</option>
+                                    <option value="Certificado">Certificado Académico</option>
+                                </select>
+                            </div>
+                            <div class="col-md-7">
+                                <label class="form-label small">Número de Identificación</label>
+                                <input type="text" name="num_doc" class="form-control" required placeholder="Se encriptará mediante AES_256">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Finalizar Registro</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancelar y volver</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card mt-5 shadow-sm border-0">
+    <div class="card-header bg-dark text-white fw-bold">👥 Gestión de Usuarios (Alumnos)</div>
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th class="text-center">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for est in lista_estudiantes %}
+                <tr>
+                    <td>{{ est.id }}</td>
+                    <td class="fw-bold">{{ est.nombre }}</td>
+                    <td>{{ est.email }}</td>
+                    <td class="text-center">
+                        <a href="/eliminar_estudiante/{{ est.id }}/" 
+                                class="btn btn-sm btn-danger fw-bold"
+                            onclick="return confirm('¿ESTÁS SEGURO? Esto borrará al alumno, sus pagos, sus materias y sus notas para siempre.')">
+                            Eliminar Perfil 🗑️
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+{% endblock %}

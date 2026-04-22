@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Demanda</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-dark p-5">
+
+    <div class="text-center mb-4" id="controles">
+        <button onclick="generarPDF()" class="btn btn-danger btn-lg fw-bold shadow">Descargar Reporte PDF</button>
+        <a href="/inscripcion/" class="btn btn-outline-light btn-lg ms-3">Volver</a>
+    </div>
+
+    <div id="documento-reporte" class="bg-white p-5 shadow-lg mx-auto" style="max-width: 800px; border-top: 15px solid #198754;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <div>
+                <h2 class="fw-bold text-success mb-0">Reporte de Demanda Académica</h2>
+                <p class="text-muted mb-0">Ranking oficial de cursos más solicitados</p>
+            </div>
+            <div class="text-end">
+                <p class="mb-0 text-muted small"><strong>Fecha de Emisión:</strong><br>{{ fecha|date:"d M Y, H:i" }}</p>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <p><strong>Generado por:</strong> {{ admin_nombre }} (Administrador del Sistema)</p>
+        </div>
+
+        <table class="table table-striped table-bordered align-middle">
+            <thead class="table-success text-center">
+                <tr>
+                    <th>#</th>
+                    <th>Nombre del Curso</th>
+                    <th>Total de Inscripciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for curso in ranking %}
+                <tr>
+                    <td class="text-center fw-bold text-muted">{{ forloop.counter }}</td>
+                    <td class="fw-bold">{{ curso.nombre_curso }}</td>
+                    <td class="text-center fs-5 text-success fw-bold">{{ curso.total_inscripciones }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted p-4">No hay inscripciones registradas en el sistema.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="text-center mt-5 pt-4">
+            <p class="small text-muted mb-0">Documento de uso interno exclusivo de la administración.</p>
+        </div>
+    </div>
+
+    <script>
+        function generarPDF() {
+            document.getElementById('controles').style.display = 'none';
+            var elemento = document.getElementById('documento-reporte');
+            var opciones = {
+                margin:       0.5,
+                filename:     'Reporte_Demanda_Cursos.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opciones).from(elemento).save().then(function() {
+                document.getElementById('controles').style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>

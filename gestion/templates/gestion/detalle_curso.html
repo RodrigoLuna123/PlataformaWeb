@@ -1,0 +1,240 @@
+{% extends "gestion/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    
+    <div class="p-5 mb-4 bg-white rounded-4 shadow-sm border position-relative overflow-hidden">
+        <div class="position-absolute top-0 end-0 p-3 opacity-25">
+            <span style="font-size: 8rem;">📚</span>
+        </div>
+        <div class="container-fluid py-2 position-relative">
+            <span class="badge bg-primary mb-2 fs-6">ID del Curso: {{ curso.curso_id }}</span>
+            <h1 class="display-5 fw-bold text-dark">{{ curso.nombre_curso }}</h1>
+            <p class="fs-5 text-muted">Instructor: {{ request.session.nombre }}</p>
+            <a href="/profesor/" class="btn btn-outline-secondary mt-3">⬅️ Volver a mis materias</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h4 class="fw-bold mb-4 border-bottom pb-2">📖 Contenido y Módulos</h4>
+
+                    <div class="accordion accordion-flush" id="acordeonContenido">
+                        <div class="accordion-item bg-light border rounded mb-3 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#mod1">
+                                    📄 Documentación y Sílabo
+                                </button>
+                            </h2>
+                            <div id="mod1" class="accordion-collapse collapse" data-bs-parent="#acordeonContenido">
+                                <div class="accordion-body bg-white">Aquí puedes encontrar las reglas de la materia y el temario oficial.</div>
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold mt-4 mb-3 text-secondary">Actividades Asignadas</h5>
+                        
+                        {% for act in actividades %}
+                        <div class="accordion-item border rounded mb-3 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#act_{{ forloop.counter }}">
+                                    📝 {{ act.titulo }}
+                                </button>
+                            </h2>
+                            <div id="act_{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#acordeonContenido">
+                                <div class="accordion-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="badge bg-danger">Vence: {{ act.fecha_entrega|date:"d M Y, H:i" }}</span>
+                                    </div>
+                                    <p class="text-dark">{{ act.descripcion }}</p>
+                                    <button class="btn btn-sm btn-outline-dark mt-2">📎 Descargar Material Adjunto</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="alert alert-info border-0 shadow-sm text-center">
+                            Aún no hay actividades publicadas para los estudiantes.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 20px;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-center mb-4 border-bottom pb-3">⚙️ Panel del Curso</h5>
+                    
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-primary btn-lg fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSubirMaterial">
+                            + Subir Nueva Actividad
+                        </button>
+                        
+                        <button class="btn btn-light border fw-bold text-start p-3 d-flex justify-content-between align-items-center" data-bs-toggle="modal" data-bs-target="#modalAlumnos">
+                            <span>👥 Ver Alumnos Inscritos</span><span>➡️</span>
+                        </button>
+                        
+                        <button class="btn btn-light border fw-bold text-start p-3 d-flex justify-content-between align-items-center" data-bs-toggle="modal" data-bs-target="#modalCalificaciones">
+                            <span>📊 Centro de Calificaciones</span><span>➡️</span>
+                        </button>
+
+                        <button class="btn btn-light border fw-bold text-start p-3 d-flex justify-content-between align-items-center" data-bs-toggle="modal" data-bs-target="#modalConfig">
+                            <span>⚙️ Configuración del Curso</span><span>➡️</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalSubirMaterial" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-primary text-white rounded-top-4">
+                <h5 class="modal-title fw-bold">Crear Actividad - {{ curso.nombre_curso }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <input type="hidden" name="accion" value="subir_actividad">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="fw-bold mb-1">Título de la Actividad</label>
+                            <input type="text" name="titulo" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="fw-bold mb-1">Fecha Límite</label>
+                            <input type="datetime-local" name="fecha" class="form-control" required>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <label class="fw-bold mb-1">Instrucciones</label>
+                            <textarea name="desc" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="col-12 mt-3 p-3 bg-light rounded border border-dashed">
+                            <label class="fw-bold mb-1 text-primary">📎 Adjuntar Archivo (Opcional)</label>
+                            <input class="form-control" type="file" name="archivo_adjunto">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom-4">
+                    <button type="submit" class="btn btn-primary fw-bold px-4">Publicar Actividad</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAlumnos" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-dark text-white rounded-top-4">
+                <h5 class="modal-title fw-bold">👥 Lista de Asistencia</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre del Alumno</th>
+                            <th>Correo Electrónico</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alu in alumnos_curso %}
+                        <tr>
+                            <td class="fw-bold text-secondary">{{ alu.estudiante_id }}</td>
+                            <td>{{ alu.nombre_completo }}</td>
+                            <td><a href="mailto:{{ alu.email }}" class="text-decoration-none">{{ alu.email }}</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted">No hay alumnos inscritos en esta materia.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCalificaciones" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-success text-white rounded-top-4">
+                <h5 class="modal-title fw-bold">📊 Asentar Calificaciones</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="guardar_calificaciones">
+                
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning small">
+                        <strong>Atención:</strong> Las calificaciones ingresadas aquí se guardarán en el expediente y enviarán una notificación automática al alumno.
+                    </div>
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Alumno</th>
+                                <th class="text-center">Calificación Final</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alu in alumnos_curso %}
+                            <tr>
+                                <td>{{ alu.nombre_completo }}</td>
+                                <td class="text-center">
+                                    <input type="number" name="nota_{{ alu.estudiante_id }}" class="form-control text-center fw-bold text-success mx-auto" style="width: 120px;" placeholder="0.0" step="0.1" max="10">
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted">Aún no hay alumnos para calificar.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom-4">
+                    <button type="submit" class="btn btn-success fw-bold px-4 w-100">Guardar Todas las Calificaciones</button>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalConfig" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-secondary text-white rounded-top-4">
+                <h5 class="modal-title fw-bold">⚙️ Configuración del Curso</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <input type="hidden" name="accion" value="actualizar_config">
+                    <div class="mb-3">
+                        <label class="fw-bold">Nombre de la Materia</label>
+                        <input type="text" name="nombre_curso" class="form-control" value="{{ curso.nombre_curso }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold">Estado del Curso</label>
+                        <select name="estado" class="form-select">
+                            <option value="Activo" {% if curso.estado == 'Activo' %}selected{% endif %}>🟢 Activo (Visible para alumnos)</option>
+                            <option value="Cerrado" {% if curso.estado == 'Cerrado' %}selected{% endif %}>🔴 Cerrado (Fin de ciclo)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom-4">
+                    <button type="submit" class="btn btn-dark w-100 fw-bold">Guardar Cambios en SQL Server</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

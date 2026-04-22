@@ -1,0 +1,55 @@
+{% extends "gestion/base.html" %}
+
+{% block title %}Métricas de Gestión{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white">🏆 Cursos Más Populares (Ranking)</div>
+            <div class="card-body">
+                <canvas id="chartCursos"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white">📅 Inscripciones por Mes (Pivot)</div>
+            <div class="card-body">
+                <canvas id="chartMeses"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfica de Barras - Ranking
+    new Chart(document.getElementById('chartCursos'), {
+        type: 'bar',
+        data: {
+            labels: {{ nombres_cursos|safe }},
+            datasets: [{
+                label: 'Inscritos',
+                data: {{ totales_cursos|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            }]
+        }
+    });
+
+    // Gráfica de Línea - Meses
+    new Chart(document.getElementById('chartMeses'), {
+        type: 'line',
+        data: {
+            labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+            datasets: [{
+                label: 'Volumen Mensual',
+                data: {{ meses_data|safe }},
+                borderColor: '#198754',
+                tension: 0.3,
+                fill: true
+            }]
+        }
+    });
+</script>
+{% endblock %}

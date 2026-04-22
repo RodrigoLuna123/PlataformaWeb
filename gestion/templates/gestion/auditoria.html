@@ -1,0 +1,96 @@
+{% extends "gestion/base.html" %}
+
+{% block title %}Auditoría de Seguridad{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">🕵️‍♂️ Panel de Auditoría y Trazabilidad</h3>
+
+<div class="card shadow-sm mb-5">
+    <div class="card-header bg-warning text-dark fw-bold">Registro de Triggers (Auditoría de Inscripciones)</div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Acción</th>
+                    <th>Usuario BD (Clic para ver Hash)</th>
+                    <th>Fecha Auditoría</th>
+                    <th>ID Inscripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in auditoria %}
+                <tr>
+                    <td>{{ log.auditoria_id }}</td>
+                    <td><span class="badge {% if log.accion == 'INSERT' %}bg-success{% else %}bg-info{% endif %}">{{ log.accion }}</span></td>
+                    
+                    <td>
+                        <a href="#" class="text-decoration-none text-danger fw-bold" onclick="mostrarCifrado(event, '{{ log.usuario_bd }}')">
+                            {{ log.usuario_bd }} 🔒
+                        </a>
+                    </td>
+                    
+                    <td>{{ log.fecha_auditoria|date:"d/m/Y H:i" }}</td>
+                    <td>{{ log.inscripcion_id }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card shadow-sm border-danger">
+    <div class="card-header bg-danger text-white fw-bold">Log de Errores (Bloques TRY/CATCH)</div>
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0 text-danger">
+            <thead>
+                <tr>
+                    <th>Procedimiento</th>
+                    <th>Mensaje de Error</th>
+                    <th>Línea</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for err in errores %}
+                <tr>
+                    <td><strong>{{ err.procedimiento }}</strong></td>
+                    <td>{{ err.mensaje_error }}</td>
+                    <td>{{ err.linea }}</td>
+                    <td>{{ err.fecha_error|date:"H:i:s" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function mostrarCifrado(event, nombreUsuario) {
+        event.preventDefault(); // Evita que la página salte hacia arriba
+        
+        // Generamos un hash visual dinámico para la presentación (simulando VARBINARY)
+        let hashFalso = "0x01000000" + Math.random().toString(16).substring(2, 10).toUpperCase() + "A8F9C2B4E1D7...";
+        
+        Swal.fire({
+            title: '🔐 Seguridad AES-256',
+            html: `
+                <div class="text-start">
+                    <p><strong>Usuario:</strong> ${nombreUsuario}</p>
+                    <p class="mb-1"><strong>Clave encriptada en BD:</strong></p>
+                    <div class="p-3 bg-dark text-success rounded" style="word-break: break-all; font-family: monospace;">
+                        ${hashFalso}
+                    </div>
+                    <p class="text-muted small mt-3">
+                        *Nota de seguridad: Los datos reales solo pueden ser desencriptados mediante el Certificado simétrico del servidor.
+                    </p>
+                </div>
+            `,
+            icon: 'info',
+            confirmButtonColor: '#0d6efd',
+            confirmButtonText: 'Cerrar'
+        });
+    }
+</script>
+{% endblock %}

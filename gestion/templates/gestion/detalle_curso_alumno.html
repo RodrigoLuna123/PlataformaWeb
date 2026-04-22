@@ -1,0 +1,187 @@
+{% extends "gestion/base.html" %}
+
+{% block navbar %}
+<nav class="bg-dark text-white p-2 small d-flex justify-content-between px-4" style="background-color: #1a1a1a !important;">
+    <div><a href="/alumno/" class="text-white text-decoration-none">⬅️ Cursos</a> | <span class="fw-bold text-uppercase">UNI_262_{{ curso.curso_id }}00_ING - {{ curso.nombre_curso }}</span></div>
+    <div><a href="/logout/" class="text-white text-decoration-none">Cerrar Sesión</a></div>
+</nav>
+
+<ul class="nav nav-pills bg-dark text-white px-4 py-2 border-bottom border-secondary gap-4 small shadow-sm mb-4" id="alumnoTabs" role="tablist" style="background-color: #262626 !important;">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active text-info fw-bold bg-transparent border-0 border-bottom border-2 border-info rounded-0 pb-1 px-0" data-bs-toggle="pill" data-bs-target="#contenido" type="button">Contenido</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link text-secondary fw-bold bg-transparent border-0 rounded-0 pb-1 px-0" data-bs-toggle="pill" data-bs-target="#calendario" type="button">Calendario</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link text-secondary fw-bold bg-transparent border-0 rounded-0 pb-1 px-0" data-bs-toggle="pill" data-bs-target="#anuncios" type="button">Anuncios</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link text-secondary fw-bold bg-transparent border-0 rounded-0 pb-1 px-0" data-bs-toggle="pill" data-bs-target="#calificaciones" type="button">Libro de calificaciones <span class="badge bg-primary rounded-circle">1</span></button>
+    </li>
+</ul>
+
+<script>
+    document.querySelectorAll('#alumnoTabs .nav-link').forEach(tab => {
+        tab.addEventListener('show.bs.tab', function(e) {
+            document.querySelectorAll('#alumnoTabs .nav-link').forEach(t => {
+                t.classList.remove('text-info', 'border-bottom', 'border-2', 'border-info');
+                t.classList.add('text-secondary');
+            });
+            e.target.classList.remove('text-secondary');
+            e.target.classList.add('text-info', 'border-bottom', 'border-2', 'border-info');
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="position-relative mb-4 rounded overflow-hidden shadow-sm" style="height: 180px; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1000&q=80') center/cover;">
+    <div class="position-absolute bottom-0 start-0 p-4">
+        <p class="text-light small mb-0">UNI_262_{{ curso.curso_id }}00_ING</p>
+        <h2 class="text-white fw-bold mb-0 text-uppercase">{{ curso.nombre_curso }}</h2>
+    </div>
+    <span class="position-absolute top-0 end-0 m-3 badge bg-primary shadow">ABIERTO</span>
+</div>
+
+<div class="row px-4">
+    <div class="col-md-8">
+        
+        <div class="tab-content" id="alumnoTabsContent">
+            
+            <div class="tab-pane fade show active" id="contenido" role="tabpanel">
+                <h5 class="fw-bold mb-3">Contenido del curso</h5>
+                <div class="accordion shadow-sm" id="acc">
+                    <div class="accordion-item mb-3 border rounded border-primary">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button fw-bold py-4 bg-light" data-bs-toggle="collapse" data-bs-target="#t1">
+                                <span class="me-2 text-primary">📁</span> Entregables y Tareas
+                            </button>
+                        </h2>
+                        <div id="t1" class="accordion-collapse collapse show" data-bs-parent="#acc">
+                            <div class="accordion-body p-4">
+                                {% for a in actividades %}
+                                <div class="border-start border-4 border-info ps-4 mb-4 bg-white p-3 rounded shadow-sm">
+                                    <h6 class="fw-bold text-primary mb-2">📝 {{ a.titulo }}</h6>
+                                    <p class="small text-danger fw-bold mb-2">⏳ Vence: {{ a.fecha_entrega|date:"d M Y, H:i" }}</p>
+                                    <p class="small text-secondary mb-3">{{ a.descripcion }}</p>
+                                    
+                                    <button class="btn btn-dark btn-sm fw-bold px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalEntrega" onclick="document.getElementById('tareaTitulo').value = '{{ a.titulo }}'; document.getElementById('nombreTareaUI').innerText = '{{ a.titulo }}';">
+                                        Subir mi entrega 📤
+                                    </button>
+                                </div>
+                                {% empty %}
+                                <p class="text-muted small">El profesor aún no ha publicado actividades en este curso.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="calendario" role="tabpanel">
+                <h5 class="fw-bold mb-3">📅 Calendario de Entregas</h5>
+                <div class="bg-white p-4 rounded shadow-sm border">
+                    <ul class="list-group list-group-flush">
+                        {% for a in actividades %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <div>
+                                <h6 class="fw-bold mb-0">{{ a.titulo }}</h6>
+                                <small class="text-muted">{{ a.descripcion|truncatechars:50 }}</small>
+                            </div>
+                            <span class="badge bg-danger rounded-pill px-3 py-2">Vence: {{ a.fecha_entrega|date:"d M, H:i" }}</span>
+                        </li>
+                        {% empty %}
+                        <p class="text-muted small">No hay eventos próximos en el calendario.</p>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="anuncios" role="tabpanel">
+                <h5 class="fw-bold mb-3">📢 Anuncios del Profesor</h5>
+                {% for an in anuncios %}
+                <div class="alert alert-secondary border-0 shadow-sm mb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ an.remitente }}</strong>
+                        <small class="text-muted">{{ an.fecha|date:"d M Y" }}</small>
+                    </div>
+                    <hr class="my-2">
+                    <p class="mb-0">{{ an.mensaje }}</p>
+                </div>
+                {% empty %}
+                <div class="bg-white p-4 rounded shadow-sm border text-center">
+                    <p class="text-muted small mb-0">No tienes anuncios recientes.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="tab-pane fade" id="calificaciones" role="tabpanel">
+                <h5 class="fw-bold mb-3">📊 Libro de Calificaciones</h5>
+                <div class="bg-white p-4 rounded shadow-sm border d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold text-uppercase mb-0">Calificación Final del Curso</h6>
+                        <small class="text-muted">Asentada por el profesor titular.</small>
+                    </div>
+                    <div>
+                        <span class="badge {% if mi_calificacion == 'Aún no calificado' %}bg-secondary{% elif mi_calificacion >= 8 %}bg-success{% else %}bg-danger{% endif %} fs-4 px-4 py-2 shadow-sm">
+                            {{ mi_calificacion }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border mb-4 shadow-sm">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-4">Profesores del curso</h6>
+                <div class="d-flex align-items-center">
+                    <div class="bg-secondary text-white rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm" style="width: 50px; height: 50px; font-size: 1.5rem;">
+                        {{ curso.instructor|slice:":1" }}
+                    </div>
+                    <div>
+                        <p class="fw-bold mb-0 text-uppercase">{{ curso.instructor }}</p>
+                        <p class="text-muted small mb-0" style="font-size: 0.75rem;">UNITEC PROFESOR</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEntrega" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-dark text-white rounded-top-4">
+                <h5 class="modal-title fw-bold">📤 Subir Entrega</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <input type="hidden" name="accion" value="subir_entrega">
+                    <input type="hidden" name="titulo_tarea" id="tareaTitulo" value="">
+                    
+                    <p class="fw-bold text-primary mb-3">Actividad: <span id="nombreTareaUI" class="text-dark"></span></p>
+                    
+                    <div class="mb-3 p-3 bg-light rounded border border-dashed text-center">
+                        <label class="fw-bold mb-2">Selecciona tu archivo (PDF, Word, ZIP)</label>
+                        <input class="form-control form-control-sm" type="file" name="archivo_alumno" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="fw-bold small text-muted">Comentarios para el profesor (Opcional)</label>
+                        <textarea class="form-control" name="comentarios" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom-4">
+                    <button type="submit" class="btn btn-primary fw-bold w-100">Enviar Actividad a Revisión</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

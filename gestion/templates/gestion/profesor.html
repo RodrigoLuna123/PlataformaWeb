@@ -1,0 +1,144 @@
+{% extends "gestion/base.html" %}
+
+{% block content %}
+<div class="container mt-2">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <h2 class="text-primary fw-bold mb-0">👨‍🏫 Panel del Instructor: {{ request.session.nombre }}</h2>
+        
+        <button class="btn btn-warning shadow-sm position-relative fw-bold" data-bs-toggle="offcanvas" data-bs-target="#panelNotificaciones">
+            🔔 Mis Notificaciones
+            {% if notificaciones %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ notificaciones|length }}
+            </span>
+            {% endif %}
+        </button>
+    </div>
+
+    <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active fw-bold" data-bs-toggle="pill" data-bs-target="#pills-cursos">📚 Mis Materias</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link fw-bold ms-2" data-bs-toggle="pill" data-bs-target="#pills-alumnos">👥 Mis Alumnos</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="pills-tabContent">
+        
+        <div class="tab-pane fade show active" id="pills-cursos" role="tabpanel">
+            <div class="row g-4">
+                {% for c in cursos %}
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
+                        <div style="height: 120px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);" class="position-relative">
+                            <span class="badge bg-light text-dark position-absolute top-0 end-0 m-2">Abierto</span>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small mb-1">CÓDIGO_{{ c.curso_id }}</p>
+                            <h6 class="card-title fw-bold text-uppercase" style="min-height: 40px;">{{ c.nombre_curso }}</h6>
+                            <hr>
+                            
+                            <a href="/curso/{{ c.curso_id }}/" class="btn btn-dark btn-sm w-100 fw-bold shadow-sm">
+                                Entrar al Curso ➡️
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-warning text-center shadow-sm">Aún no tienes materias asignadas este ciclo.</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pills-alumnos" role="tabpanel">
+            <div class="card shadow-sm border-0 p-4">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Matrícula</th>
+                            <th>Nombre del Alumno</th>
+                            <th>Contacto</th>
+                            <th class="text-center">Expediente</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alu in alumnos %}
+                        <tr>
+                            <td class="fw-bold text-secondary">{{ alu.estudiante_id }}</td>
+                            <td>{{ alu.nombre_completo }}</td>
+                            <td>{{ alu.email }}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-info text-white fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalExpediente{{ alu.estudiante_id }}">
+                                    Ver Expediente 🗂️
+                                </button>
+                            </td>
+                        </tr>
+
+                        <div class="modal fade" id="modalExpediente{{ alu.estudiante_id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-info text-white">
+                                        <h5 class="modal-title fw-bold">Expediente Académico</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body text-center mt-3">
+                                        <div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center shadow" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                                            {{ alu.nombre_completo|slice:":1" }}
+                                        </div>
+                                        <h4 class="fw-bold mt-3">{{ alu.nombre_completo }}</h4>
+                                        <p class="text-muted mb-1">Matrícula: <strong>{{ alu.estudiante_id }}</strong></p>
+                                        <p class="text-muted">Estado Actual: <span class="badge bg-success">Regular</span></p>
+                                        <hr>
+                                        <p class="small text-start text-muted bg-light p-2 rounded border">
+                                            * Nota de Privacidad: Las calificaciones detalladas de este alumno están protegidas por encriptación simétrica AES_256. 
+                                        </p>
+                                    </div>
+                                    <div class="modal-footer bg-light">
+                                        <button class="btn btn-outline-dark w-100 fw-bold">✉️ Redactar Correo Directo</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">No hay alumnos inscritos en tus materias todavía.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end shadow" tabindex="-1" id="panelNotificaciones">
+    <div class="offcanvas-header bg-dark text-white">
+        <h5 class="offcanvas-title fw-bold">🔔 Buzón de Entrada</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body bg-light">
+        {% for noti in notificaciones %}
+        <div class="card mb-3 border-0 shadow-sm border-start border-warning border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <strong class="text-dark">{{ noti.remitente }}</strong>
+                    <small class="text-muted">{{ noti.fecha|date:"d M, H:i" }}</small>
+                </div>
+                <p class="card-text small text-secondary mb-0">{{ noti.mensaje }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center mt-5 text-muted">
+            <h1 class="display-4">📭</h1>
+            <p>No tienes mensajes nuevos en tu bandeja.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

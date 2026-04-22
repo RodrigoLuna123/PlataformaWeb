@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Boleta Oficial</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-dark p-5">
+
+    <div class="text-center mb-4" id="controles">
+        <button onclick="generarPDF()" class="btn btn-danger btn-lg fw-bold shadow">Descargar PDF Oficial</button>
+        <a href="/alumno/" class="btn btn-outline-light btn-lg ms-3">Volver</a>
+    </div>
+
+    <div id="documento-boleta" class="bg-white p-5 shadow-lg mx-auto" style="max-width: 800px; border-top: 15px solid #0d6efd;">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold text-primary">Boleta Oficial de Calificaciones</h1>
+            <p class="text-muted">Sistema Integral de Gestión Educativa</p>
+        </div>
+
+        <div class="row mb-5 bg-light p-3 rounded">
+            <div class="col-sm-8">
+                <p class="mb-1"><strong>Estudiante:</strong> {{ nombre }}</p>
+                <p class="mb-0"><strong>Matrícula (ID):</strong> {{ request.session.usuario_id }}</p>
+            </div>
+            <div class="col-sm-4 text-end">
+                <p class="mb-0 text-muted small"><strong>Fecha de Emisión:</strong><br>{{ fecha|date:"d M Y, H:i" }}</p>
+            </div>
+        </div>
+
+        <table class="table table-bordered align-middle">
+            <thead class="table-primary text-center">
+                <tr>
+                    <th>Materia / Curso</th>
+                    <th>Calificación Final</th>
+                    <th>Observaciones Generales</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nota in notas %}
+                <tr>
+                    <td class="fw-bold text-dark">{{ nota.nombre_curso }}</td>
+                    <td class="text-center fs-5 text-success fw-bold">{{ nota.calificacion }}</td>
+                    <td class="small fst-italic">{{ nota.comentarios }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted p-4">Aún no cuentas con evaluaciones registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="text-center mt-5 pt-4 border-top">
+            <p class="small text-muted mb-0">Este documento es válido para fines informativos.</p>
+            <p class="small text-muted fw-bold">🔒 Trazabilidad Garantizada: Datos verificados por el motor de BD.</p>
+        </div>
+    </div>
+
+    <script>
+        function generarPDF() {
+            // Ocultamos los botones para que no salgan impresos en el PDF
+            document.getElementById('controles').style.display = 'none';
+
+            var elemento = document.getElementById('documento-boleta');
+            var opciones = {
+                margin:       0.5,
+                filename:     'Boleta_Oficial_{{ nombre }}.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            // Generamos el PDF y cuando termine, volvemos a mostrar los botones
+            html2pdf().set(opciones).from(elemento).save().then(function() {
+                document.getElementById('controles').style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>

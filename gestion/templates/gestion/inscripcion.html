@@ -1,0 +1,140 @@
+{% extends "gestion/base.html" %}
+
+{% block title %}Procesar Inscripción{% endblock %}
+
+{% block content %}
+
+<div class="container d-flex justify-content-end mb-3 mt-2">
+    <a href="/reporte_cursos_pdf/" class="btn btn-danger shadow-sm fw-bold">
+        📊 Generar Reporte de Demanda (PDF)
+    </a>
+</div>
+
+<div class="row justify-content-center mb-5">
+    <div class="col-lg-8">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-success text-white py-3">
+                <h4 class="mb-0">💳 Inscripción y Pago Centralizado</h4>
+                <small>Integridad de transacciones garantizada mediante ROLLBACK en caso de error</small>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="inscribir">
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">1. Seleccionar Estudiante</label>
+                        <select name="estudiante_id" class="form-select select2" required>
+                            <option value="">-- Buscar por nombre --</option>
+                            {% for est in estudiantes %}
+                                <option value="{{ est.id }}">{{ est.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">2. Elegir Curso</label>
+                            <select name="curso_id" class="form-select" required>
+                                <option value="">-- Cursos con cupo --</option>
+                                {% for cur in cursos %}
+                                    <option value="{{ cur.id }}">{{ cur.nombre }} (${{ cur.costo }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">3. Asignar Instructor</label>
+                            <select name="instructor_id" class="form-select" required>
+                                {% for inst in instructores %}
+                                    <option value="{{ inst.id }}">{{ inst.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="p-3 border rounded border-success mb-4">
+                        <h6 class="text-success fw-bold">Detalles Financieros</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small">Método de Pago</label>
+                                <select name="metodo_pago" class="form-select">
+                                    <option value="Transferencia">Transferencia</option>
+                                    <option value="Tarjeta">Tarjeta Bancaria</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">Referencia</label>
+                                <input type="text" name="referencia" class="form-control" required placeholder="Folio del pago">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small">Monto Pagado</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="monto" class="form-control" required step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">Confirmar Transacción Bancaria e Inscripción</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white fw-bold py-3">
+                📋 Inscripciones Activas (Gestión de Bajas)
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="px-4">Folio</th>
+                                <th>Alumno</th>
+                                <th>Curso</th>
+                                <th>Fecha de Alta</th>
+                                <th class="text-center px-4">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for insc in inscripciones_activas %}
+                            <tr>
+                                <td class="px-4 text-muted fw-bold">#{{ insc.id }}</td>
+                                <td>{{ insc.alumno }}</td>
+                                <td><span class="badge bg-primary">{{ insc.curso }}</span></td>
+                                <td class="small text-muted">{{ insc.fecha|date:"d M Y" }}</td>
+                                <td class="text-center px-4">
+                                    
+                                    <form method="POST" onsubmit="return confirm('ATENCIÓN: ¿Estás seguro de dar de baja a {{ insc.alumno }} del curso {{ insc.curso }}? Esta acción no se puede deshacer.');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="accion" value="eliminar">
+                                        <input type="hidden" name="inscripcion_id" value="{{ insc.id }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger fw-bold shadow-sm">
+                                            Dar de baja 🗑️
+                                        </button>
+                                    </form>
+
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <span style="font-size: 2rem;">📭</span><br>
+                                    No hay inscripciones activas en el sistema.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
